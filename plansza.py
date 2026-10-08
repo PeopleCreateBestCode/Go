@@ -8,11 +8,8 @@ class Plansza:
     def __init__(self, rozmiar: int, sgf: str = ""):
 
         self.plansza = [[Tile.BORDER for _ in range(rozmiar + 2)] if i == 0 or i == rozmiar + 1 else [Tile.BORDER if k == 0 or k == rozmiar + 1 else Tile.EMPTY for k in range(rozmiar + 2)] for i in range(rozmiar + 2)]
-
-        self.bonus_za_zbicia_biali = 0
-        self.bonus_za_zbicia_czarni = 0
         # Ta linijka u góry tworzy planszę w jednej linijce. (Mogłem to zrobić w bardziej rozbudowanej funckji ale python to python :P)
-
+        
         # 55555555555
         # 50000000005    (5 to ramka, a 0 to pusty tile. jeśli rozmiar jest podany 9 to jest 11 rzędów i 11 kolumn ponieważ ramka z każdej strony liczy się jako pole)
         # 50000000005
@@ -24,6 +21,9 @@ class Plansza:
         # 50000000005 
         # 50000000005
         # 55555555555
+        
+        self.bonus_za_zbicia_biali = 0
+        self.bonus_za_zbicia_czarni = 0
         
         if sgf != "":
             self.plansza = position_parser.parse_position_from_sgf(rozmiar, sgf)
@@ -72,24 +72,34 @@ class Plansza:
         except:
             pass
     
-
     def zmien_pole(self, x, y, pole: Tile):
 
         self.plansza[y][x] = pole
         
-
     def sprawdz(self, czy_czarne: bool):        
         w = copy.deepcopy(self.plansza)
         
         for rzad in range(len(self.plansza)):
             for kolumna in range(len(self.plansza[rzad])):
-                if (rzad,kolumna) == (6,3):
-                    pass
                 if w[rzad][kolumna] == Tile.EMPTY:
                     w = self.polacz_plansze(w, self.__policz_punkt(w, kolumna, rzad, czy_czarne), czy_czarne)
         
         self.plansza = self.polacz_plansze(w, w, czy_czarne, True)
 
+    def zaznacz_martwe_na_terytorium(self, czy_czarne: bool):
+        w = copy.deepcopy(self.plansza)
+        
+        punkt_sprawdzany = Tile.BLACK_POINT if czy_czarne else Tile.WHITE_POINT
+        
+        for rzad in range(len(self.plansza)):
+            for kolumna in range(len(self.plansza[rzad])):
+                if w[rzad][kolumna] == punkt_sprawdzany:
+                    w = self.polacz_plansze(w, self.__policz_punkt(w, kolumna, rzad, czy_czarne), czy_czarne)
+        
+        self.plansza = self.polacz_plansze(w, w, czy_czarne, True, True)
+        
+        return self.plansza
+    
     def __policz_punkt(
         self,
         plansza: list[list[Tile]],
@@ -98,6 +108,7 @@ class Plansza:
         czy_czarne: bool
     ) -> list[list[Tile]]:
 
+        
         tile = Tile.BLACK if czy_czarne else Tile.WHITE
         
         dead_tile = Tile.BLACK_DEAD if czy_czarne else Tile.WHITE_DEAD
@@ -281,6 +292,9 @@ class Plansza:
         
         odwiedzone = []
         
+        if x == 6 and y == 8:
+            pass
+        
         sprawdz_rekursywny(x, y)
         
         # self.debug_printuj_plansze(temp_plansza)
@@ -293,7 +307,7 @@ class Plansza:
         
         return temp_plansza
 
-    def polacz_plansze(self, stara_plansza: list[list[Tile]], w: list[list[Tile]], czy_czarne: bool, normalize: bool = False):
+    def polacz_plansze(self, stara_plansza: list[list[Tile]], w: list[list[Tile]], czy_czarne: bool, normalize: bool = False, change_opposite_one_to_dead: bool = False):
         nowa_plansza = [[Tile.EMPTY for j in range(len(self.plansza))] for i in range(len(self.plansza))]
                 
         final_punkt = Tile.BLACK_POINT if czy_czarne else Tile.WHITE_POINT
@@ -302,8 +316,10 @@ class Plansza:
             Tile.TEMP_ONE: final_punkt,
             Tile.TEMP_ZERO: Tile.EMPTY,
             Tile.TEMP_OPPOSITE_ZERO: Tile.BLACK if not czy_czarne else Tile.WHITE,
-            Tile.TEMP_OPPOSITE_ONE: Tile.BLACK if not czy_czarne else Tile.WHITE
+            Tile.TEMP_OPPOSITE_ONE: (Tile.BLACK if not czy_czarne else Tile.WHITE) if not change_opposite_one_to_dead else (Tile.BLACK_DEAD if not czy_czarne else Tile.WHITE_DEAD)
         }
+        
+        
         
         for i in range(len(nowa_plansza)):
             for j in range(len(nowa_plansza[i])):
@@ -311,6 +327,8 @@ class Plansza:
                     nowa_plansza[i][j] = final_punkt
                 elif w[i][j] in [Tile.TEMP_ONE, Tile.TEMP_ZERO, Tile.TEMP_OPPOSITE_ONE, Tile.TEMP_OPPOSITE_ZERO] and not normalize:
                     nowa_plansza[i][j] = w[i][j]
+                elif w[i][j] == Tile.TEMP_OPPOSITE_ONE:
+                    nowa_plansza[i][j] = translator[w[i][j]]
                 else:
                     if w[i][j] in translator:
                         nowa_plansza[i][j] = translator[w[i][j]]
