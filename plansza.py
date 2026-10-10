@@ -143,8 +143,6 @@ class Plansza:
                     if temp_plansza[rzad][kolumna] == tile:
                         temp_plansza[rzad][kolumna] = dead_tile
 
-        ##W[fb];W[hb];W[jb];B[fc];B[gc];B[hc];B[ic];B[jc];B[kc];W[lc];W[mc];W[ed];B[fd];B[ld];W[md];W[de];W[ee];B[fe];B[le];W[me];W[ef];B[ff];B[gf];B[hf];B[lf];W[mf];B[eg];W[fg];W[gg];W[hg];B[ig];B[lg];W[dh];B[eh];W[gh];W[hh];B[ih];B[kh];B[lh];W[mh];B[fi];B[gi];B[hi];B[ii];B[ji];W[fj];W[gj];W[hj];W[ij];W[jj];W[kj];W[lj]
-        
         def sprawdz_oddech(x: int, y: int) -> None:
             if (x, y) in odwiedzone:
                 return
@@ -336,3 +334,20 @@ class Plansza:
                         nowa_plansza[i][j] = stara_plansza[i][j]
         
         return nowa_plansza
+
+    def sprawdz_samobojstwo(self, rzad: int, kolumna: int, czy_czarny: bool) -> bool:
+        plansza_backup = copy.deepcopy(self.plansza)
+        
+        opposite = Tile.WHITE_POINT if czy_czarny else Tile.BLACK_POINT
+        
+        self.zmien_pole(rzad, kolumna, Tile.BLACK if czy_czarny else Tile.WHITE)
+        
+        self.sprawdz(czy_czarny)
+        self.sprawdz(not czy_czarny)
+        
+        if self.plansza[rzad][kolumna] == opposite:
+            self.plansza = copy.deepcopy(plansza_backup)
+            return False
+        else:
+            self.plansza = copy.deepcopy(plansza_backup)
+            return True

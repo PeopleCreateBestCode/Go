@@ -38,15 +38,36 @@ class Gra: ## Główna klasa, tutaj wszystko się dzieje
             return
 
         if not czy_pas:
-            self.plansza.zmien_pole(x, y, Tile.BLACK if tura_czarny else Tile.WHITE) 
-        
-        self.plansza.sprawdz(tura_czarny)
-        self.plansza.sprawdz(not tura_czarny)
-        
-        self.plansza.debug_printuj_plansze(self.plansza.plansza)
-        
-        self.graj(not tura_czarny)
+            legalny = self.sprawdz_czy_legalny(y, x, tura_czarny)
+            
+            if legalny:
+                self.plansza.zmien_pole(x, y, Tile.BLACK if tura_czarny else Tile.WHITE)
+                
+                self.plansza.sprawdz(tura_czarny)
+                self.plansza.sprawdz(not tura_czarny)
+                
+                self.plansza.debug_printuj_plansze(self.plansza.plansza)
+                
+                self.graj(not tura_czarny)
+            else:
+                print("NIELEGALNY RUCH!")
+                self.graj(tura_czarny)       
+        else:
+            self.plansza.sprawdz(tura_czarny)
+            self.plansza.sprawdz(not tura_czarny)
+                            
+            self.plansza.debug_printuj_plansze(self.plansza.plansza)
+            self.graj(not tura_czarny)
     
+    def sprawdz_czy_legalny(self, rzad: int, kolumna: int, czy_czarny: bool) -> bool:
+        if self.plansza.plansza[rzad][kolumna] not in [Tile.EMPTY, Tile.WHITE_POINT, Tile.BLACK_POINT]:
+            return False
+        
+        if not self.plansza.sprawdz_samobojstwo(rzad, kolumna, czy_czarny):
+            return False
+        
+        return True
+        
     def zakoncz_gre(self, czy_czarne: bool):
         verity = self.plansza.zaznacz_martwe_na_terytorium(czy_czarne)        
         
@@ -60,7 +81,7 @@ class Gra: ## Główna klasa, tutaj wszystko się dzieje
         self.plansza.debug_printuj_plansze(verity)
         
         punkty_czarny = self.plansza.bonus_za_zbicia_czarni
-        punkty_bialy = self.plansza.bonus_za_zbicia_biali  + self.komi
+        punkty_bialy = self.plansza.bonus_za_zbicia_biali + self.komi
         
         for rzad in range(len(verity)):
             for kolumna in range(len(verity[rzad])):
