@@ -15,12 +15,12 @@ class Gra: ## Główna klasa, tutaj wszystko się dzieje
         pygame.init()
         
         self.screen = pygame.display.set_mode((800, 600))
-        self.background = pygame.image.load("background.png")
+        self.background = pygame.image.load("alt.png")
 
         self.white = pygame.image.load("white.jpeg")
         self.black = pygame.image.load("black.jpeg")
 
-        
+        self.rozmiar = rozmiar
 
         self.distance_pola = 25
         
@@ -31,17 +31,20 @@ class Gra: ## Główna klasa, tutaj wszystko się dzieje
     def get_clicks(self):
         clickable = []
         
-        for rzad in range(1,16):
-            for kolumna in range(1,16):
+        for rzad in range(1, self.rozmiar + 1):
+            for kolumna in range(1, self.rozmiar + 1):
                 clickable.append((rzad * self.distance_pola, kolumna * self.distance_pola))
         
         return clickable
 
     def drukuj(self, plansza: list[list[Tile]]):
+        
+        self.plansza.debug_printuj_plansze(plansza)
+        
         markers = [
             [(kolumna * self.distance_pola - 10, rzad * self.distance_pola - 10)
-            for kolumna in range(0, 16)]
-            for rzad in range(0, 16)
+            for kolumna in range(0, self.rozmiar + 1)]
+            for rzad in range(0, self.rozmiar + 1)
         ]
 
         self.screen.blit(self.background, (0, 0))
