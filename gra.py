@@ -1,7 +1,7 @@
 from enums import *
 from plansza import Plansza
 import position_parser
-import copy
+import pygame
 
 class Gra: ## Główna klasa, tutaj wszystko się dzieje
     def __init__(self, rozmiar: int, komi: float, sgf: str = ""):
@@ -12,18 +12,95 @@ class Gra: ## Główna klasa, tutaj wszystko się dzieje
         self.pas_czarny = False
         self.pas_bialy = False
         
-        self.plansza.debug_printuj_plansze(self.plansza.plansza)
-    
-    def graj(self, tura_czarny: bool = True):
-        x = int(input("Podaj x: "))
-        y = int(input("Podaj y: "))
+        pygame.init()
         
-        if x == 999 or y == 999:
-            print(position_parser.create_sgf(self.plansza.plansza))
-            x = int(input("Podaj x: "))
-            y = int(input("Podaj y: "))
-            
-        czy_pas = x == 0 or y == 0
+        self.screen = pygame.display.set_mode((800, 600))
+        self.background = pygame.image.load("background.png")
+
+        self.white = pygame.image.load("white.jpeg")
+        self.black = pygame.image.load("black.jpeg")
+
+        
+
+        self.distance_pola = 25
+        
+        self.clickable = self.get_clicks()
+        
+        self.drukuj(self.plansza.plansza)
+    
+    def get_clicks(self):
+        clickable = []
+        
+        for rzad in range(1,16):
+            for kolumna in range(1,16):
+                clickable.append((rzad * self.distance_pola, kolumna * self.distance_pola))
+        
+        return clickable
+
+    def drukuj(self, plansza: list[list[Tile]]):
+        markers = [
+            [(kolumna * self.distance_pola - 10, rzad * self.distance_pola - 10)
+            for kolumna in range(0, 16)]
+            for rzad in range(0, 16)
+        ]
+
+        self.screen.blit(self.background, (0, 0))
+
+        for rzad in range(len(plansza)):
+            for kolumna in range(len(plansza[rzad])):
+                if plansza[rzad][kolumna] == Tile.WHITE:
+                    self.screen.blit(self.white, markers[rzad][kolumna])
+                elif plansza[rzad][kolumna] == Tile.BLACK:
+                    self.screen.blit(self.black, markers[rzad][kolumna])
+
+        pygame.display.flip()
+    
+    def find_nearest(self, lista: list[tuple[int, int]], val: tuple[int, int]):
+        return min(
+            range(len(lista)),
+            key=lambda i: (lista[i][0] - val[0])**2 + (lista[i][1] - val[1])**2
+        )
+    
+    def zacznij_gre(self):
+        
+        click = None
+        running = True
+        
+        tura_czarny = True
+                
+        while running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    click = event.pos  # (x, y) coordinates of the click
+                    
+                    self.drukuj(self.plansza.plansza)
+                    
+                    near = self.find_nearest(self.clickable, click)
+                    
+
+                    x = self.clickable[near][0] // 25
+                    y = self.clickable[near][1] // 25
+                    
+                    print(f"click id :({x}, {y})  px: {self.clickable[near]}")
+                    
+                    rez = self.graj(x, y, False, tura_czarny)
+                    
+                    print(rez)
+                    
+                    self.drukuj(self.plansza.plansza)
+                    
+                    if rez:
+                        tura_czarny = not tura_czarny
+                    
+                    print(click)
+
+            pygame.display.flip()
+
+        pygame.quit()
+    
+    def graj(self,x:int, y: int, czy_pas: bool, tura_czarny: bool = True):
         
         if tura_czarny:
             self.pas_czarny = czy_pas
@@ -40,24 +117,23 @@ class Gra: ## Główna klasa, tutaj wszystko się dzieje
         if not czy_pas:
             legalny = self.sprawdz_czy_legalny(y, x, tura_czarny)
             
+            legalny = True
+            
             if legalny:
                 self.plansza.zmien_pole(x, y, Tile.BLACK if tura_czarny else Tile.WHITE)
                 
                 self.plansza.sprawdz(tura_czarny)
                 self.plansza.sprawdz(not tura_czarny)
                 
-                self.plansza.debug_printuj_plansze(self.plansza.plansza)
-                
-                self.graj(not tura_czarny)
+                return True
             else:
                 print("NIELEGALNY RUCH!")
-                self.graj(tura_czarny)       
+                return False   
         else:
             self.plansza.sprawdz(tura_czarny)
             self.plansza.sprawdz(not tura_czarny)
                             
-            self.plansza.debug_printuj_plansze(self.plansza.plansza)
-            self.graj(not tura_czarny)
+            return True
     
     def sprawdz_czy_legalny(self, rzad: int, kolumna: int, czy_czarny: bool) -> bool:
         if self.plansza.plansza[rzad][kolumna] not in [Tile.EMPTY, Tile.WHITE_POINT, Tile.BLACK_POINT]:
