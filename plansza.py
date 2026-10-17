@@ -76,7 +76,13 @@ class Plansza:
 
         self.plansza[y][x] = pole
         
-    def sprawdz(self, czy_czarne: bool):        
+    def sprawdz(self, czy_czarne: bool):    
+        
+        for rzad in range(len(self.plansza)):
+            for kolumna in range(len(self.plansza[rzad])):
+                if self.plansza[rzad][kolumna] == (Tile.BLACK_POINT if czy_czarne else Tile.WHITE_POINT):
+                    self.plansza[rzad][kolumna] = Tile.EMPTY
+            
         w = copy.deepcopy(self.plansza)
         
         for rzad in range(len(self.plansza)):

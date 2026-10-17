@@ -69,16 +69,39 @@ class Gra: ## Główna klasa, tutaj wszystko się dzieje
         click = None
         running = True
         
+        is_game = True
+        
         tura_czarny = True
                 
         while running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
+                elif event.type == pygame.KEYDOWN:
+                    key = event.key
+                    
+                    if key == pygame.K_SPACE:
+                        ## Pasowanie na spacji bo czemu nie
+                        
+                        if not is_game:
+                            continue
+                        
+                        self.graj(0, 0, True, tura_czarny)
+                        
+                        self.drukuj(self.plansza.plansza)
+                        
+                        tura_czarny = not tura_czarny
+                        
+                        if self.pas_czarny and self.pas_bialy:
+                            is_game = False
+                        
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     click = event.pos  # (x, y) coordinates of the click
                     
                     self.drukuj(self.plansza.plansza)
+                    
+                    if not is_game:
+                        continue
                     
                     near = self.find_nearest(self.clickable, click)
                     
