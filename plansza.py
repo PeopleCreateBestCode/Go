@@ -71,10 +71,6 @@ class Plansza:
                 print()
         except:
             pass
-    
-    def zmien_pole(self, x, y, pole: Tile):
-
-        self.plansza[y][x] = pole
         
     def sprawdz(self, czy_czarne: bool):    
         
@@ -353,14 +349,21 @@ class Plansza:
         
         opposite = Tile.WHITE_POINT if czy_czarny else Tile.BLACK_POINT
         
-        self.zmien_pole(rzad, kolumna, Tile.BLACK if czy_czarny else Tile.WHITE)
+        self.plansza[rzad][kolumna] = Tile.BLACK if czy_czarny else Tile.WHITE
+        
+        self.debug_printuj_plansze(self.plansza)
         
         self.sprawdz(czy_czarny)
+        
+        self.debug_printuj_plansze(self.plansza)
+        
         self.sprawdz(not czy_czarny)
+        
+        self.debug_printuj_plansze(self.plansza)
+        
         
         if self.plansza[rzad][kolumna] == opposite:
             self.plansza = copy.deepcopy(plansza_backup)
             return False
         else:
-            self.plansza = copy.deepcopy(plansza_backup)
             return True

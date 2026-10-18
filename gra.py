@@ -161,18 +161,10 @@ class Gra: ## Główna klasa, tutaj wszystko się dzieje
         if not czy_pas:
             legalny = self.sprawdz_czy_legalny(y, x, tura_czarny)
             
-            legalny = True
-            
             if legalny:
-                self.plansza.zmien_pole(x, y, Tile.BLACK if tura_czarny else Tile.WHITE)
-                
-                self.plansza.sprawdz(tura_czarny)
-                self.plansza.sprawdz(not tura_czarny)
-                
                 if debug:
                     self.plansza.debug_printuj_plansze(self.plansza.plansza)
                     self.graj(-1, -1, False, not tura_czarny, True)
-                    
                 
                 return True
             else:

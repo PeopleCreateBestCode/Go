@@ -5,7 +5,7 @@ import gra
 ##    KONFIGURACJA         ##
 #############################
 
-DEBUG = False   ### Jeśli true: gra uruchamia się bez GUI w pygame CE (jedynie tui w terminalu)
+DEBUG = False    ### Jeśli true: gra uruchamia się bez GUI w pygame CE (jedynie tui w terminalu)
 ROZMIAR_PLANSZY = 16  ### Ilość pól na planszy (nie wliczając barierki)
 KOMI = 6.5  #### bonus dla białych
 POCZATKOWA_POZYCJA = "B[gh];W[gi];B[hh];W[hi];B[hg];W[ih];B[kg];W[ig];B[hf];W[if];B[kf];W[he];B[gg];W[ge];B[fg];W[ef];B[kd];W[fe];B[bg];W[eg];B[ci];W[fh]"   ### Początkowa pozycja gry w formacie SGF z gry playgogame.org
