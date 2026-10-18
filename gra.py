@@ -4,7 +4,7 @@ import position_parser
 import pygame
 
 class Gra: ## Główna klasa, tutaj wszystko się dzieje
-    def __init__(self, rozmiar: int, komi: float, sgf: str = ""):
+    def __init__(self, rozmiar: int, komi: float, sgf: str = "", debug: bool = False):
         self.plansza = Plansza(rozmiar, sgf)
         self.komi = komi
         self.gra_trwa = True
@@ -12,15 +12,25 @@ class Gra: ## Główna klasa, tutaj wszystko się dzieje
         self.pas_czarny = False
         self.pas_bialy = False
         
+        self.rozmiar = rozmiar
+        
+        if debug:
+            self.plansza.debug_printuj_plansze(self.plansza.plansza)
+            
+            return
+        
+        ## Sekcja klasy PYGAME 
+        
         pygame.init()
         
         self.screen = pygame.display.set_mode((800, 600))
         self.background = pygame.image.load("alt.png")
+        
+        pygame.event.set_grab(False)
+        pygame.mouse.set_visible(True)
 
         self.white = pygame.image.load("white.jpeg")
         self.black = pygame.image.load("black.jpeg")
-
-        self.rozmiar = rozmiar
 
         self.distance_pola = 25
         
@@ -121,12 +131,20 @@ class Gra: ## Główna klasa, tutaj wszystko się dzieje
                         tura_czarny = not tura_czarny
                     
                     print(click)
+                    
+                    click = None
 
             pygame.display.flip()
 
         pygame.quit()
     
-    def graj(self,x:int, y: int, czy_pas: bool, tura_czarny: bool = True):
+    def graj(self,x:int, y: int, czy_pas: bool, tura_czarny: bool = True, debug: bool = False):
+        
+        if debug:
+            x = int(input("Podaj x: "))
+            y = int(input("Podaj y: "))
+            
+            czy_pas = x == 0 or y == 0
         
         if tura_czarny:
             self.pas_czarny = czy_pas
@@ -151,14 +169,27 @@ class Gra: ## Główna klasa, tutaj wszystko się dzieje
                 self.plansza.sprawdz(tura_czarny)
                 self.plansza.sprawdz(not tura_czarny)
                 
+                if debug:
+                    self.plansza.debug_printuj_plansze(self.plansza.plansza)
+                    self.graj(-1, -1, False, not tura_czarny, True)
+                    
+                
                 return True
             else:
                 print("NIELEGALNY RUCH!")
+                
+                if debug:
+                    self.plansza.debug_printuj_plansze(self.plansza.plansza)
+                    self.graj(-1, -1, False, tura_czarny, True)
                 return False   
         else:
             self.plansza.sprawdz(tura_czarny)
             self.plansza.sprawdz(not tura_czarny)
                             
+            if debug:
+                self.plansza.debug_printuj_plansze(self.plansza.plansza)
+                self.graj(-1, -1, False, not tura_czarny, True)
+                
             return True
     
     def sprawdz_czy_legalny(self, rzad: int, kolumna: int, czy_czarny: bool) -> bool:
