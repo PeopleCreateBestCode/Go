@@ -22,9 +22,6 @@ class Plansza:
         # 50000000005
         # 55555555555
         
-        self.bonus_za_zbicia_biali = 0
-        self.bonus_za_zbicia_czarni = 0
-        
         if sgf != "":
             self.plansza = position_parser.parse_position_from_sgf(rozmiar, sgf)
 
@@ -175,10 +172,6 @@ class Plansza:
                 for kolumna in range(len(temp_plansza[rzad])):
                     if temp_plansza[rzad][kolumna] == dead_tile:
                         temp_plansza[rzad][kolumna] = Tile.EMPTY
-                        if dead_tile == Tile.WHITE_DEAD:
-                            self.bonus_za_zbicia_czarni += 1
-                        else:
-                            self.bonus_za_zbicia_czarni += 1
         
         def sprawdz_rekursywny(x: int, y: int) -> None:
             
