@@ -1,6 +1,5 @@
 from enums import *
 from plansza import Plansza
-import position_parser
 import pygame
 from button import Button
 import gif_pygame
@@ -24,9 +23,17 @@ class Gra: ## Główna klasa, tutaj wszystko się dzieje
         ## Sekcja klasy PYGAME 
         
         pygame.init()
+        pygame.font.init()
         
-        self.screen = pygame.display.set_mode((800, 600))
+        self.screen = pygame.display.set_mode((680, 425))
         self.background = pygame.image.load("alt.png")
+        
+        self.galaxy_bg = pygame.image.load("galaxy.jpeg")
+        
+        self.font = pygame.font.Font(None, 36)
+        
+        self.label_czarne = self.font.render("Czarne: 0", True, (255, 255, 255))
+        self.label_biale = self.font.render("Białe: 0", True, (255, 255, 0))
         
         pygame.event.set_grab(False)
         pygame.mouse.set_visible(True)
@@ -68,6 +75,7 @@ class Gra: ## Główna klasa, tutaj wszystko się dzieje
             Button((450, 100), (216, 96), self.white, self.pas)
         ]
         
+        self.screen.blit(self.galaxy_bg, (0,0))
         self.drukuj(self.plansza.plansza)
     
     def pas(self):
@@ -93,7 +101,8 @@ class Gra: ## Główna klasa, tutaj wszystko się dzieje
             for kolumna in range(0, self.rozmiar + 1)]
             for rzad in range(0, self.rozmiar + 1)
         ]
-
+        
+        self.screen.blit(self.galaxy_bg, (0, 0))
         self.screen.blit(self.background, (0, 0))
 
         for rzad in range(len(plansza)):
@@ -111,7 +120,9 @@ class Gra: ## Główna klasa, tutaj wszystko się dzieje
                 elif plansza[rzad][kolumna] == Tile.BLACK_POINT and not self.gra_trwa:
                     self.screen.blit(self.black_point, markers[rzad][kolumna])
                             
-                
+        
+        self.screen.blit(self.label_czarne, (450, 300))
+        self.screen.blit(self.label_biale, (450, 350))
 
         pygame.display.flip()
     
@@ -128,7 +139,8 @@ class Gra: ## Główna klasa, tutaj wszystko się dzieje
         
         tura_czarny = True
                 
-        while running:
+        while running:            
+            
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
@@ -193,6 +205,7 @@ class Gra: ## Główna klasa, tutaj wszystko się dzieje
                     if self.pas_czarny and self.pas_bialy:
                         self.gra_trwa = False
 
+            
             self.pass_gif.render(self.screen, (450, 100))
             
             pygame.display.flip()
