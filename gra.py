@@ -23,6 +23,7 @@ class Gra: ## Główna klasa, tutaj wszystko się dzieje
         
         ## Sekcja klasy PYGAME 
         
+        
         pygame.init()
         pygame.font.init()
         
@@ -33,6 +34,9 @@ class Gra: ## Główna klasa, tutaj wszystko się dzieje
         
         self.font = pygame.font.Font(None, 36)
         
+        self.sound_black = pygame.mixer.Sound("snd/piece1.mp3")
+        self.sound_white = pygame.mixer.Sound("snd/piece2.mp3")
+        
         self.label_czarne = self.font.render("Czarne: 0", True, (255, 255, 255))
         self.label_biale = self.font.render("Białe: 0", True, (255, 255, 0))
         
@@ -41,30 +45,9 @@ class Gra: ## Główna klasa, tutaj wszystko się dzieje
         pygame.event.set_grab(False)
         pygame.mouse.set_visible(True)
 
-        self.white = pygame.Surface((20, 20), pygame.SRCALPHA)
-        pygame.draw.circle(self.white, (255, 255, 255), (10, 10), 10)
+        self.is_masha = True
 
-        self.black = pygame.Surface((20, 20), pygame.SRCALPHA)
-        pygame.draw.circle(self.black, (0, 0, 0), (10, 10), 10)
-        
-        
-        self.white_crossed = pygame.Surface((20, 20), pygame.SRCALPHA)
-        pygame.draw.circle(self.white_crossed, (255, 255, 255), (10, 10), 10)
-        pygame.draw.line(self.white_crossed, (255, 0, 0), (4, 4), (16, 16), 2)
-        pygame.draw.line(self.white_crossed, (255, 0, 0), (16, 4), (4, 16), 2)
-
-        self.black_crossed = pygame.Surface((20, 20), pygame.SRCALPHA)
-        pygame.draw.circle(self.black_crossed, (0, 0, 0), (10, 10), 10)
-        pygame.draw.line(self.black_crossed, (255, 0, 0), (4, 4), (16, 16), 2)
-        pygame.draw.line(self.black_crossed, (255, 0, 0), (16, 4), (4, 16), 2)
-        
-        
-        self.black_point = pygame.Surface((20, 20), pygame.SRCALPHA)
-        pygame.draw.rect(self.black_point, (0, 0, 0), (5, 5, 10, 10))
-        self.white_point = pygame.Surface((20, 20), pygame.SRCALPHA)
-        pygame.draw.rect(self.white_point, (255, 255, 255), (5, 5, 10, 10))
-
-
+        self.toggle_masha()  ## ZAMIENIA is_masha NA FALSE!!!!!!!!
 
         self.distance_pola = 25
         
@@ -75,11 +58,58 @@ class Gra: ## Główna klasa, tutaj wszystko się dzieje
         self.pass_gif = gif_pygame.load("pass.gif")
         
         self.buttons: list[Button] = [
-            Button((450, 100), (216, 96), self.white, self.pas)
-        ]
+            Button((450, 100), (216, 96), self.white, self.pas),
+            Button((600, 400), (50, 50), pygame.image.load("mab.webp"), self.toggle_masha)
+            
+            ]
         
         self.screen.blit(self.galaxy_bg, (0,0))
         self.drukuj(self.plansza.plansza)
+    
+    def toggle_masha(self):
+        self.is_masha = not self.is_masha
+        
+        self.black_point = pygame.Surface((20, 20), pygame.SRCALPHA)
+        pygame.draw.rect(self.black_point, (0, 0, 0), (5, 5, 10, 10))
+        self.white_point = pygame.Surface((20, 20), pygame.SRCALPHA)
+        pygame.draw.rect(self.white_point, (255, 255, 255), (5, 5, 10, 10))
+            
+        
+        if self.is_masha:
+            self.black = pygame.image.load("masha.jpeg")
+            self.white = pygame.image.load("bear.jpeg")
+            
+            self.white_crossed = pygame.image.load("bear.jpeg")
+            pygame.draw.line(self.white_crossed, (255, 0, 0), (4, 4), (16, 16), 2)
+            pygame.draw.line(self.white_crossed, (255, 0, 0), (16, 4), (4, 16), 2)
+    
+            self.black_crossed = pygame.image.load("masha.jpeg")
+            pygame.draw.line(self.black_crossed, (255, 0, 0), (4, 4), (16, 16), 2)
+            pygame.draw.line(self.black_crossed, (255, 0, 0), (16, 4), (4, 16), 2)
+
+            
+            pygame.mixer.music.load("snd/musica3.wav")
+            pygame.mixer.music.play(-1)
+        else:
+            pygame.mixer.music.stop()
+            
+            self.white = pygame.Surface((20, 20), pygame.SRCALPHA)
+            pygame.draw.circle(self.white, (255, 255, 255), (10, 10), 10)
+    
+            self.black = pygame.Surface((20, 20), pygame.SRCALPHA)
+            pygame.draw.circle(self.black, (0, 0, 0), (10, 10), 10)
+            
+            
+            self.white_crossed = pygame.Surface((20, 20), pygame.SRCALPHA)
+            pygame.draw.circle(self.white_crossed, (255, 255, 255), (10, 10), 10)
+            pygame.draw.line(self.white_crossed, (255, 0, 0), (4, 4), (16, 16), 2)
+            pygame.draw.line(self.white_crossed, (255, 0, 0), (16, 4), (4, 16), 2)
+    
+            self.black_crossed = pygame.Surface((20, 20), pygame.SRCALPHA)
+            pygame.draw.circle(self.black_crossed, (0, 0, 0), (10, 10), 10)
+            pygame.draw.line(self.black_crossed, (255, 0, 0), (4, 4), (16, 16), 2)
+            pygame.draw.line(self.black_crossed, (255, 0, 0), (16, 4), (4, 16), 2)
+
     
     def pas(self):
         print("Pass")
@@ -219,6 +249,8 @@ class Gra: ## Główna klasa, tutaj wszystko się dzieje
             self.label_tura = self.font.render(f"Tura: {"Białe" if tura_czarny else "Czarne"}", True, (255, 255, 255))
             self.pass_gif.render(self.screen, (450, 100))
             
+            self.screen.blit(self.buttons[1].source, (600, 400))
+            
             pygame.display.flip()
 
         pygame.quit()
@@ -260,7 +292,8 @@ class Gra: ## Główna klasa, tutaj wszystko się dzieje
                 if debug:
                     self.plansza.debug_printuj_plansze(self.plansza.plansza)
                     self.graj(-1, -1, False, not tura_czarny, True)
-                
+                else:
+                    pygame.mixer.Sound.play(self.sound_black if tura_czarny else self.sound_white)
                 return True
             else:
                 print("NIELEGALNY RUCH!")
