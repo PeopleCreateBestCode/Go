@@ -3,6 +3,7 @@ from plansza import Plansza
 import pygame
 from button import Button
 import gif_pygame
+import position_parser
 
 class Gra: ## Główna klasa, tutaj wszystko się dzieje
     def __init__(self, rozmiar: int, komi: float, sgf: str = "", debug: bool = False):
@@ -34,6 +35,8 @@ class Gra: ## Główna klasa, tutaj wszystko się dzieje
         
         self.label_czarne = self.font.render("Czarne: 0", True, (255, 255, 255))
         self.label_biale = self.font.render("Białe: 0", True, (255, 255, 0))
+        
+        self.label_tura = self.font.render("Tura: Czarne", True, (255, 255, 255))
         
         pygame.event.set_grab(False)
         pygame.mouse.set_visible(True)
@@ -123,6 +126,7 @@ class Gra: ## Główna klasa, tutaj wszystko się dzieje
         
         self.screen.blit(self.label_czarne, (450, 300))
         self.screen.blit(self.label_biale, (450, 350))
+        self.screen.blit(self.label_tura, (450, 50))
 
         pygame.display.flip()
     
@@ -182,12 +186,18 @@ class Gra: ## Główna klasa, tutaj wszystko się dzieje
                     
                     rez = self.graj(x, y, False, tura_czarny)
                     
+                    self.label_czarne = self.font.render(f"Czarne: {self.plansza.punkty_czarne}", True, (255, 255, 255))
+                    self.label_biale = self.font.render(f"Białe: {self.plansza.punkty_biale + self.komi}", True, (255, 255, 0))
+                    
+                    
                     print(rez)
                     
                     self.drukuj(self.plansza.plansza)
-                    
+                                        
                     if rez:
                         tura_czarny = not tura_czarny
+                    
+                    
                     
                     print(click)
                     
@@ -205,7 +215,8 @@ class Gra: ## Główna klasa, tutaj wszystko się dzieje
                     if self.pas_czarny and self.pas_bialy:
                         self.gra_trwa = False
 
-            
+
+            self.label_tura = self.font.render(f"Tura: {"Białe" if tura_czarny else "Czarne"}", True, (255, 255, 255))
             self.pass_gif.render(self.screen, (450, 100))
             
             pygame.display.flip()
@@ -229,6 +240,16 @@ class Gra: ## Główna klasa, tutaj wszystko się dzieje
             punkty_czarny, punkty_bialy, plansza = self.zakoncz_gre(tura_czarny)
             
             print(f"Punkty:\n\tCzarny: {punkty_czarny}\n\tBiały: {punkty_bialy} (Wliczone komi {self.komi})")
+            
+            if not debug:
+                self.label_czarne = self.font.render(f"Czarne: {punkty_czarny}", True, (255, 255, 255))
+                self.label_biale = self.font.render(f"Białe: {punkty_bialy}", True, (255, 255, 0))
+                
+                self.label_tura = self.font.render(f"Koniec gry!\n {"Wygrywa Czarny!" if punkty_czarny > punkty_bialy else "Wygrywa Biały" if punkty_bialy > punkty_czarny else "Remis! (niemożliwy przypadek)!"}", True, (255, 255, 255))
+                
+            
+            with open("pozycja.txt", "w", encoding="utf-8") as plik:
+                plik.write(position_parser.create_sgf(self.plansza.plansza))
             
             return
 
@@ -268,8 +289,6 @@ class Gra: ## Główna klasa, tutaj wszystko się dzieje
         return True
         
     def zakoncz_gre(self, czy_czarne: bool):
-        self.gra_trwa = False
-        
         verity = self.plansza.zaznacz_martwe_na_terytorium(czy_czarne)        
         
         verity_opposite = self.plansza.zaznacz_martwe_na_terytorium(not czy_czarne)
@@ -294,5 +313,9 @@ class Gra: ## Główna klasa, tutaj wszystko się dzieje
                     punkty_czarny += 2
                 elif verity[rzad][kolumna] == Tile.BLACK_DEAD:
                     punkty_bialy += 2
+        
+        
+        
+        self.gra_trwa = False
         
         return punkty_czarny, punkty_bialy, verity

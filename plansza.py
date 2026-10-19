@@ -22,6 +22,9 @@ class Plansza:
         # 50000000005
         # 55555555555
         
+        self.punkty_czarne = 0
+        self.punkty_biale = 0
+        
         if sgf != "":
             self.plansza = position_parser.parse_position_from_sgf(rozmiar, sgf)
 
@@ -71,6 +74,9 @@ class Plansza:
         
     def sprawdz(self, czy_czarne: bool):    
         
+        self.punkty_czarne = 0
+        self.punkty_biale = 0
+        
         for rzad in range(len(self.plansza)):
             for kolumna in range(len(self.plansza[rzad])):
                 if self.plansza[rzad][kolumna] == (Tile.BLACK_POINT if czy_czarne else Tile.WHITE_POINT):
@@ -84,6 +90,13 @@ class Plansza:
                     w = self.polacz_plansze(w, self.__policz_punkt(w, kolumna, rzad, czy_czarne), czy_czarne)
         
         self.plansza = self.polacz_plansze(w, w, czy_czarne, True)
+        
+        for rzad in range(len(self.plansza)):
+            for kolumna in range(len(self.plansza[rzad])):
+                if self.plansza[rzad][kolumna] == Tile.BLACK_POINT:
+                    self.punkty_czarne += 1
+                elif self.plansza[rzad][kolumna] == Tile.WHITE_POINT:
+                    self.punkty_biale += 1
 
     def zaznacz_martwe_na_terytorium(self, czy_czarne: bool):
         w = copy.deepcopy(self.plansza)
