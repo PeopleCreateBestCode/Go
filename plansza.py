@@ -356,13 +356,10 @@ class Plansza:
         opposite = Tile.WHITE_POINT if czy_czarny else Tile.BLACK_POINT
         
         self.plansza[rzad][kolumna] = Tile.BLACK if czy_czarny else Tile.WHITE
-        
-        self.debug_printuj_plansze(self.plansza)
-        
+                
         self.sprawdz(czy_czarny)
-        
-        self.debug_printuj_plansze(self.plansza)
-        
+        self.sprawdz(not czy_czarny)
+        self.sprawdz(czy_czarny)
         self.sprawdz(not czy_czarny)
         
         self.debug_printuj_plansze(self.plansza)

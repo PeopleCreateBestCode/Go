@@ -5,6 +5,17 @@ from button import Button
 import gif_pygame
 import position_parser
 import asyncio
+from pathlib import Path
+import sys
+
+def resource_path(relative_path):
+    if "__compiled__" in globals():
+        base_path = Path(__file__).resolve().parent
+    else:
+        base_path = Path(__file__).resolve().parent
+
+    return base_path / relative_path
+
 
 class Gra: ## Główna klasa, tutaj wszystko się dzieje
     def __init__(self, rozmiar: int, komi: float, sgf: str = "", debug: bool = False):
@@ -16,6 +27,8 @@ class Gra: ## Główna klasa, tutaj wszystko się dzieje
         self.pas_bialy = False
         
         self.rozmiar = rozmiar
+        
+        self.tura = 0
         
         if debug:
             self.plansza.debug_printuj_plansze(self.plansza.plansza)
@@ -31,17 +44,17 @@ class Gra: ## Główna klasa, tutaj wszystko się dzieje
         self.screen = pygame.display.set_mode((680, 425))
         pygame.display.set_caption("Go")
         
-        self.background = pygame.image.load("assets/img/alt.png")
+        self.background = pygame.image.load(str(resource_path("assets/img/alt.png")))
         
-        self.galaxy_bg = pygame.image.load("assets/img/galaxy.jpeg")
+        self.galaxy_bg = pygame.image.load(str(resource_path("assets/img/galaxy.jpeg")))
         
         self.font = pygame.font.Font(None, 36)
         
-        self.sound_black = pygame.mixer.Sound("assets/snd/piece1.ogg")
-        self.sound_white = pygame.mixer.Sound("assets/snd/piece2.ogg")
+        self.sound_black = pygame.mixer.Sound(str(resource_path("assets/snd/piece1.ogg")))
+        self.sound_white = pygame.mixer.Sound(str(resource_path("assets/snd/piece2.ogg")))
         
         self.label_czarne = self.font.render("Czarne: 0", True, (255, 255, 255))
-        self.label_biale = self.font.render("Białe: 0", True, (255, 255, 0))
+        self.label_biale = self.font.render(f"Białe: {self.komi}", True, (255, 255, 0))
         
         self.label_tura = self.font.render("Tura: Czarne", True, (255, 255, 255))
         
@@ -58,11 +71,11 @@ class Gra: ## Główna klasa, tutaj wszystko się dzieje
         
         self.czy_pas_wcisniety = False
         
-        self.pass_gif = gif_pygame.load("assets/img/pass.gif")
+        self.pass_gif = gif_pygame.load(str(resource_path("assets/img/pass.gif")))
         
         self.buttons: list[Button] = [
             Button((450, 100), (216, 96), self.white, self.pas),
-            Button((600, 400), (50, 50), pygame.image.load("assets/img/mab.webp"), self.toggle_masha)
+            Button((600, 400), (50, 50), pygame.image.load(str(resource_path("assets/img/mab.webp"))), self.toggle_masha)
             
             ]
         
@@ -79,23 +92,23 @@ class Gra: ## Główna klasa, tutaj wszystko się dzieje
             
         
         if self.is_masha:
-            self.black = pygame.image.load("assets/img/masha.jpeg")
-            self.white = pygame.image.load("assets/img/bear.jpeg")
+            self.black = pygame.image.load(str(resource_path("assets/img/masha.jpeg")))
+            self.white = pygame.image.load(str(resource_path("assets/img/bear.jpeg")))
             
             pygame.display.set_caption("Go: Masha edition")
             
-            self.white_crossed = pygame.image.load("assets/img/bear.jpeg")
+            self.white_crossed = pygame.image.load(str(resource_path("assets/img/bear.jpeg")))
             pygame.draw.line(self.white_crossed, (255, 0, 0), (4, 4), (16, 16), 2)
             pygame.draw.line(self.white_crossed, (255, 0, 0), (16, 4), (4, 16), 2)
     
-            self.black_crossed = pygame.image.load("assets/img/masha.jpeg")
+            self.black_crossed = pygame.image.load(str(resource_path("assets/img/masha.jpeg")))
             pygame.draw.line(self.black_crossed, (255, 0, 0), (4, 4), (16, 16), 2)
             pygame.draw.line(self.black_crossed, (255, 0, 0), (16, 4), (4, 16), 2)
             
-            self.galaxy_bg = pygame.image.load("assets/img/mab_bg.png")
+            self.galaxy_bg = pygame.image.load(str(resource_path("assets/img/mab_bg.png")))
 
             
-            pygame.mixer.music.load("assets/snd/musica3.ogg")
+            pygame.mixer.music.load(str(resource_path("assets/snd/musica3.ogg")))
             pygame.mixer.music.play(-1)
         else:
             pygame.mixer.music.stop()
@@ -108,7 +121,7 @@ class Gra: ## Główna klasa, tutaj wszystko się dzieje
             self.black = pygame.Surface((20, 20), pygame.SRCALPHA)
             pygame.draw.circle(self.black, (0, 0, 0), (10, 10), 10)
             
-            self.galaxy_bg = pygame.image.load("assets/img/galaxy.jpeg")
+            self.galaxy_bg = pygame.image.load(str(resource_path("assets/img/galaxy.jpeg")))
             
             
             self.white_crossed = pygame.Surface((20, 20), pygame.SRCALPHA)
@@ -230,8 +243,9 @@ class Gra: ## Główna klasa, tutaj wszystko się dzieje
                     
                     rez = self.graj(x, y, False, tura_czarny)
                     
-                    self.label_czarne = self.font.render(f"Czarne: {self.plansza.punkty_czarne}", True, (255, 255, 255))
-                    self.label_biale = self.font.render(f"Białe: {self.plansza.punkty_biale + self.komi}", True, (255, 255, 0))
+                    if self.tura > 4:
+                        self.label_czarne = self.font.render(f"Czarne: {self.plansza.punkty_czarne}", True, (255, 255, 255))
+                        self.label_biale = self.font.render(f"Białe: {self.plansza.punkty_biale + self.komi}", True, (255, 255, 0))
                     
                     
                     print(rez)
@@ -272,6 +286,8 @@ class Gra: ## Główna klasa, tutaj wszystko się dzieje
         pygame.quit()
     
     def graj(self,x:int, y: int, czy_pas: bool, tura_czarny: bool = True, debug: bool = False):
+        
+        self.tura += 1
         
         if debug:
             x = int(input("Podaj x: "))
