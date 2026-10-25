@@ -1,3 +1,14 @@
+# /// script
+# dependencies = [
+#   "gif_pygame",
+#   "packaging",
+#   "pillow",
+#   "pygame-ce"
+# ]
+# ///
+
+
+
 from enums import *
 import gra
 import asyncio
