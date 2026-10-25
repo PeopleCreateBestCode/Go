@@ -4,6 +4,7 @@ import pygame
 from button import Button
 import gif_pygame
 import position_parser
+import asyncio
 
 class Gra: ## Główna klasa, tutaj wszystko się dzieje
     def __init__(self, rozmiar: int, komi: float, sgf: str = "", debug: bool = False):
@@ -28,14 +29,14 @@ class Gra: ## Główna klasa, tutaj wszystko się dzieje
         pygame.font.init()
         
         self.screen = pygame.display.set_mode((680, 425))
-        self.background = pygame.image.load("alt.png")
+        self.background = pygame.image.load("img/alt.png")
         
-        self.galaxy_bg = pygame.image.load("galaxy.jpeg")
+        self.galaxy_bg = pygame.image.load("img/galaxy.jpeg")
         
         self.font = pygame.font.Font(None, 36)
         
-        self.sound_black = pygame.mixer.Sound("snd/piece1.mp3")
-        self.sound_white = pygame.mixer.Sound("snd/piece2.mp3")
+        self.sound_black = pygame.mixer.Sound("snd/piece1.ogg")
+        self.sound_white = pygame.mixer.Sound("snd/piece2.ogg")
         
         self.label_czarne = self.font.render("Czarne: 0", True, (255, 255, 255))
         self.label_biale = self.font.render("Białe: 0", True, (255, 255, 0))
@@ -55,11 +56,11 @@ class Gra: ## Główna klasa, tutaj wszystko się dzieje
         
         self.czy_pas_wcisniety = False
         
-        self.pass_gif = gif_pygame.load("pass.gif")
+        self.pass_gif = gif_pygame.load("img/pass.gif")
         
         self.buttons: list[Button] = [
             Button((450, 100), (216, 96), self.white, self.pas),
-            Button((600, 400), (50, 50), pygame.image.load("mab.webp"), self.toggle_masha)
+            Button((600, 400), (50, 50), pygame.image.load("img/mab.webp"), self.toggle_masha)
             
             ]
         
@@ -76,19 +77,21 @@ class Gra: ## Główna klasa, tutaj wszystko się dzieje
             
         
         if self.is_masha:
-            self.black = pygame.image.load("masha.jpeg")
-            self.white = pygame.image.load("bear.jpeg")
+            self.black = pygame.image.load("img/masha.jpeg")
+            self.white = pygame.image.load("img/bear.jpeg")
             
-            self.white_crossed = pygame.image.load("bear.jpeg")
+            self.white_crossed = pygame.image.load("img/bear.jpeg")
             pygame.draw.line(self.white_crossed, (255, 0, 0), (4, 4), (16, 16), 2)
             pygame.draw.line(self.white_crossed, (255, 0, 0), (16, 4), (4, 16), 2)
     
-            self.black_crossed = pygame.image.load("masha.jpeg")
+            self.black_crossed = pygame.image.load("img/masha.jpeg")
             pygame.draw.line(self.black_crossed, (255, 0, 0), (4, 4), (16, 16), 2)
             pygame.draw.line(self.black_crossed, (255, 0, 0), (16, 4), (4, 16), 2)
+            
+            self.galaxy_bg = pygame.image.load("img/mab_bg.png")
 
             
-            pygame.mixer.music.load("snd/musica3.wav")
+            pygame.mixer.music.load("snd/musica3.ogg")
             pygame.mixer.music.play(-1)
         else:
             pygame.mixer.music.stop()
@@ -98,6 +101,8 @@ class Gra: ## Główna klasa, tutaj wszystko się dzieje
     
             self.black = pygame.Surface((20, 20), pygame.SRCALPHA)
             pygame.draw.circle(self.black, (0, 0, 0), (10, 10), 10)
+            
+            self.galaxy_bg = pygame.image.load("img/galaxy.jpeg")
             
             
             self.white_crossed = pygame.Surface((20, 20), pygame.SRCALPHA)
@@ -166,7 +171,7 @@ class Gra: ## Główna klasa, tutaj wszystko się dzieje
             key=lambda i: (lista[i][0] - val[0])**2 + (lista[i][1] - val[1])**2
         )
     
-    def zacznij_gre(self):
+    async def zacznij_gre(self):
         
         click = None
         running = True
@@ -198,6 +203,7 @@ class Gra: ## Główna klasa, tutaj wszystko się dzieje
                     
                     for btn in self.buttons:
                         if btn.check_and_click(click):
+                            self.drukuj(self.plansza.plansza)
                             cont = True
                         
                     if cont:
@@ -252,6 +258,8 @@ class Gra: ## Główna klasa, tutaj wszystko się dzieje
             self.screen.blit(self.buttons[1].source, (600, 400))
             
             pygame.display.flip()
+            
+            await asyncio.sleep(0)
 
         pygame.quit()
     
@@ -277,8 +285,11 @@ class Gra: ## Główna klasa, tutaj wszystko się dzieje
                 self.label_czarne = self.font.render(f"Czarne: {punkty_czarny}", True, (255, 255, 255))
                 self.label_biale = self.font.render(f"Białe: {punkty_bialy}", True, (255, 255, 0))
                 
-                self.label_tura = self.font.render(f"Koniec gry!\n {"Wygrywa Czarny!" if punkty_czarny > punkty_bialy else "Wygrywa Biały" if punkty_bialy > punkty_czarny else "Remis! (niemożliwy przypadek)!"}", True, (255, 255, 255))
-                
+                self.label_tura = self.font.render(
+                    f"Tura: {'Czarne' if tura_czarny else 'Białe'}",
+                    True,
+                    (255, 255, 255),
+                )
             
             with open("pozycja.txt", "w", encoding="utf-8") as plik:
                 plik.write(position_parser.create_sgf(self.plansza.plansza))

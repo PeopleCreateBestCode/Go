@@ -1,5 +1,6 @@
 from enums import *
 import gra
+import asyncio
 
 #############################
 ##    KONFIGURACJA         ##
@@ -19,11 +20,13 @@ POCZATKOWA_POZYCJA = "B[dh];W[mh]"   ### Początkowa pozycja gry w formacie SGF 
 ##    Koniec Konfiguracji  ##
 #############################
 
+async def main():
+    game = gra.Gra(ROZMIAR_PLANSZY, KOMI, POCZATKOWA_POZYCJA, DEBUG)
 
-game = gra.Gra(ROZMIAR_PLANSZY, KOMI, POCZATKOWA_POZYCJA, DEBUG)
-
-        
-if DEBUG:
-    game.graj(-1, -1, False, True, True)
-else:
-    game.zacznij_gre()
+            
+    if DEBUG:
+        game.graj(-1, -1, False, True, True)
+    else:
+        await game.zacznij_gre()
+    
+asyncio.run(main())

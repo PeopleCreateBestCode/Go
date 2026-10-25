@@ -8,6 +8,9 @@
 bin
 bin/
 
+build
+build/
+
 __pycache__/
 __pycache__
 
