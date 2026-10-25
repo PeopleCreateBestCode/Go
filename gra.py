@@ -294,7 +294,7 @@ class Gra: ## Główna klasa, tutaj wszystko się dzieje
                 self.label_biale = self.font.render(f"Białe: {punkty_bialy}", True, (255, 255, 0))
                 
                 self.label_tura = self.font.render(
-                    f"Tura: {'Czarne' if tura_czarny else 'Białe'}",
+                    f"Koniec gry!\nWygrywa {"czarny" if punkty_czarny > punkty_bialy else "biały"}",
                     True,
                     (255, 255, 255),
                 )
