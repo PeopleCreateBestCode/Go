@@ -5,7 +5,20 @@
 
 .venv/
 
+bin
+bin/
+
+build
+build/
+
+main.build/
+main.dist/
+main.onefile-build/
+Go.exe
+
 __pycache__/
 __pycache__
 
 launch.json
+
+pozycja.txt

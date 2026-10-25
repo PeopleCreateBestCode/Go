@@ -22,8 +22,8 @@ class Plansza:
         # 50000000005
         # 55555555555
         
-        self.bonus_za_zbicia_biali = 0
-        self.bonus_za_zbicia_czarni = 0
+        self.punkty_czarne = 0
+        self.punkty_biale = 0
         
         if sgf != "":
             self.plansza = position_parser.parse_position_from_sgf(rozmiar, sgf)
@@ -35,7 +35,7 @@ class Plansza:
                 Tile.BLACK.value: "\033[48;5;27m*\033[0m",
                 Tile.WHITE.value: "\033[48;5;28m*\033[0m",
                 Tile.BLACK_POINT.value: "\033[48;5;52m*\033[0m",
-                Tile.WHITE_POINT.value: "\033[48;5;52m*\033[0m",
+                Tile.WHITE_POINT.value: "\033[48;5;60m*\033[0m",
                 Tile.BORDER.value: "\033[48;5;58m*\033[0m",
                 Tile.TEMP_ONE.value: "\033[48;5;222m*\033[0m",
                 Tile.TEMP_ZERO.value: "\033[48;5;55m*\033[0m",
@@ -71,12 +71,17 @@ class Plansza:
                 print()
         except:
             pass
-    
-    def zmien_pole(self, x, y, pole: Tile):
-
-        self.plansza[y][x] = pole
         
-    def sprawdz(self, czy_czarne: bool):        
+    def sprawdz(self, czy_czarne: bool):    
+        
+        self.punkty_czarne = 0
+        self.punkty_biale = 0
+        
+        for rzad in range(len(self.plansza)):
+            for kolumna in range(len(self.plansza[rzad])):
+                if self.plansza[rzad][kolumna] == (Tile.BLACK_POINT if czy_czarne else Tile.WHITE_POINT):
+                    self.plansza[rzad][kolumna] = Tile.EMPTY
+            
         w = copy.deepcopy(self.plansza)
         
         for rzad in range(len(self.plansza)):
@@ -85,6 +90,13 @@ class Plansza:
                     w = self.polacz_plansze(w, self.__policz_punkt(w, kolumna, rzad, czy_czarne), czy_czarne)
         
         self.plansza = self.polacz_plansze(w, w, czy_czarne, True)
+        
+        for rzad in range(len(self.plansza)):
+            for kolumna in range(len(self.plansza[rzad])):
+                if self.plansza[rzad][kolumna] == Tile.BLACK_POINT:
+                    self.punkty_czarne += 1
+                elif self.plansza[rzad][kolumna] == Tile.WHITE_POINT:
+                    self.punkty_biale += 1
 
     def zaznacz_martwe_na_terytorium(self, czy_czarne: bool):
         w = copy.deepcopy(self.plansza)
@@ -173,14 +185,10 @@ class Plansza:
                 for kolumna in range(len(temp_plansza[rzad])):
                     if temp_plansza[rzad][kolumna] == dead_tile:
                         temp_plansza[rzad][kolumna] = Tile.EMPTY
-                        if dead_tile == Tile.WHITE_DEAD:
-                            self.bonus_za_zbicia_czarni += 1
-                        else:
-                            self.bonus_za_zbicia_czarni += 1
         
         def sprawdz_rekursywny(x: int, y: int) -> None:
             
-            # self.debug_printuj_plansze(temp_plansza)
+            #self.debug_printuj_plansze(temp_plansza)
             
             if (x, y) in odwiedzone:
                 return
@@ -270,23 +278,25 @@ class Plansza:
                 ):
                     rozsiej_zero(nx, ny)
     
+    
+        ### START
 
         zamien_wszystkie_na_martwe()
         
-        # self.debug_printuj_plansze(temp_plansza)
+        #self.debug_printuj_plansze(temp_plansza)
         
         odwiedzone = []
         
         for rzad in range(len(temp_plansza)):
             for kolumna in range(len(temp_plansza[rzad])):
-                if temp_plansza[rzad][kolumna] in [Tile.EMPTY, Tile.TEMP_ONE, Tile.BLACK_POINT, Tile.WHITE_POINT]:
+                if temp_plansza[rzad][kolumna] in [Tile.EMPTY, Tile.TEMP_ZERO,  Tile.TEMP_ONE, Tile.BLACK_POINT, Tile.WHITE_POINT]:
                     sprawdz_oddech(kolumna, rzad)
         
-        # self.debug_printuj_plansze(temp_plansza)
+        #self.debug_printuj_plansze(temp_plansza)
         
         usun_martwe()
         
-        # self.debug_printuj_plansze(temp_plansza)
+        #self.debug_printuj_plansze(temp_plansza)
         
         odwiedzone = []
         
@@ -295,7 +305,7 @@ class Plansza:
         
         sprawdz_rekursywny(x, y)
         
-        # self.debug_printuj_plansze(temp_plansza)
+        #self.debug_printuj_plansze(temp_plansza)
         
         for odw in odwiedzone[::-1]:
             if temp_plansza[odw[1]][odw[0]] in [Tile.TEMP_ZERO, Tile.TEMP_OPPOSITE_ZERO]: 
@@ -308,6 +318,9 @@ class Plansza:
     def polacz_plansze(self, stara_plansza: list[list[Tile]], w: list[list[Tile]], czy_czarne: bool, normalize: bool = False, change_opposite_one_to_dead: bool = False):
         nowa_plansza = [[Tile.EMPTY for j in range(len(self.plansza))] for i in range(len(self.plansza))]
                 
+        #self.debug_printuj_plansze(w)
+        #self.debug_printuj_plansze(stara_plansza)
+        
         final_punkt = Tile.BLACK_POINT if czy_czarne else Tile.WHITE_POINT
         
         translator = {
@@ -317,7 +330,8 @@ class Plansza:
             Tile.TEMP_OPPOSITE_ONE: (Tile.BLACK if not czy_czarne else Tile.WHITE) if not change_opposite_one_to_dead else (Tile.BLACK_DEAD if not czy_czarne else Tile.WHITE_DEAD)
         }
         
-        
+        if not czy_czarne:
+            pass
         
         for i in range(len(nowa_plansza)):
             for j in range(len(nowa_plansza[i])):
@@ -333,6 +347,7 @@ class Plansza:
                     else:
                         nowa_plansza[i][j] = stara_plansza[i][j]
         
+        #self.debug_printuj_plansze(nowa_plansza)
         return nowa_plansza
 
     def sprawdz_samobojstwo(self, rzad: int, kolumna: int, czy_czarny: bool) -> bool:
@@ -340,14 +355,21 @@ class Plansza:
         
         opposite = Tile.WHITE_POINT if czy_czarny else Tile.BLACK_POINT
         
-        self.zmien_pole(rzad, kolumna, Tile.BLACK if czy_czarny else Tile.WHITE)
+        self.plansza[rzad][kolumna] = Tile.BLACK if czy_czarny else Tile.WHITE
+        
+        self.debug_printuj_plansze(self.plansza)
         
         self.sprawdz(czy_czarny)
+        
+        self.debug_printuj_plansze(self.plansza)
+        
         self.sprawdz(not czy_czarny)
+        
+        self.debug_printuj_plansze(self.plansza)
+        
         
         if self.plansza[rzad][kolumna] == opposite:
             self.plansza = copy.deepcopy(plansza_backup)
             return False
         else:
-            self.plansza = copy.deepcopy(plansza_backup)
             return True
