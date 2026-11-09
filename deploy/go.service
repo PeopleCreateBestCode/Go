@@ -1,0 +1,15 @@
+[Unit]
+Description=Gra Go
+After=network.target
+
+[Service]
+User=gra
+WorkingDirectory=/opt/gra
+# tam jest SECRET_KEY=... (tworzy sie go raz na serwerze, nie trzymamy go w repo)
+EnvironmentFile=/etc/gra.env
+# workers musi byc 1, bo gry sa trzymane w pamieci
+ExecStart=/opt/gra/.venv/bin/gunicorn --workers 1 --threads 50 --bind 127.0.0.1:8000 app:app
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

@@ -1,12 +1,12 @@
 from enums import *
 import gra
-import asyncio
+import webbrowser
 
 #############################
 ##    KONFIGURACJA         ##
 #############################
 
-DEBUG = False    ### Jeśli true: gra uruchamia się bez GUI w pygame CE (jedynie tui w terminalu)
+DEBUG = False    ### Jeśli true: gra uruchamia się bez przeglądarki (jedynie tui w terminalu)
 ROZMIAR_PLANSZY = 16  ### Ilość pól na planszy (nie wliczając barierki)
 KOMI = 6.5  #### bonus dla białych
 POCZATKOWA_POZYCJA = ""   ### Początkowa pozycja gry w formacie SGF z gry playgogame.org
@@ -19,13 +19,28 @@ POCZATKOWA_POZYCJA = ""   ### Początkowa pozycja gry w formacie SGF z gry playg
 ##    Koniec Konfiguracji  ##
 #############################
 
-async def main():
-    game = gra.Gra(ROZMIAR_PLANSZY, KOMI, POCZATKOWA_POZYCJA, DEBUG)
-
-            
+def main():
     if DEBUG:
-        game.graj(-1, -1, False, True, True)
+        game = gra.Gra(ROZMIAR_PLANSZY, KOMI, POCZATKOWA_POZYCJA, DEBUG)
+
+        while game.faza == "gra":
+            x = int(input("Podaj x: "))
+            y = int(input("Podaj y: "))
+
+            if x == 0 or y == 0:
+                game.pas()
+            elif not game.klik(x, y):
+                print("NIELEGALNY RUCH!")
+
+            game.plansza.debug_printuj_plansze(game.plansza.plansza)
+
+        game.akceptuj("czarne")
+        game.akceptuj("biale")
+        print(f"Punkty:\n\tCzarny: {game.punkty_czarne}\n\tBiały: {game.punkty_biale} (Wliczone komi {KOMI})")
     else:
-        await game.zacznij_gre()
-    
-asyncio.run(main())
+        from app import app
+
+        webbrowser.open("http://127.0.0.1:8000/")
+        app.run(port=8000)
+
+main()

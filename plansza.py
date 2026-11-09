@@ -9,7 +9,7 @@ class Plansza:
 
         self.plansza = [[Tile.BORDER for _ in range(rozmiar + 2)] if i == 0 or i == rozmiar + 1 else [Tile.BORDER if k == 0 or k == rozmiar + 1 else Tile.EMPTY for k in range(rozmiar + 2)] for i in range(rozmiar + 2)]
         # Ta linijka u góry tworzy planszę w jednej linijce. (Mogłem to zrobić w bardziej rozbudowanej funckji ale python to python :P)
-        
+
         # 55555555555
         # 50000000005    (5 to ramka, a 0 to pusty tile. jeśli rozmiar jest podany 9 to jest 11 rzędów i 11 kolumn ponieważ ramka z każdej strony liczy się jako pole)
         # 50000000005
@@ -18,18 +18,21 @@ class Plansza:
         # 50000000005
         # 50000000005
         # 50000000005
-        # 50000000005 
+        # 50000000005
         # 50000000005
         # 55555555555
-        
+
         self.punkty_czarne = 0
         self.punkty_biale = 0
-        
+
+        self.rozmiar = rozmiar
+        self.poprzednia = None  ## plansza sprzed ostatniego ruchu, potrzebna do ko
+
         if sgf != "":
             self.plansza = position_parser.parse_position_from_sgf(rozmiar, sgf)
 
     def debug_printuj_plansze(self, plansza): ## Nie do używania !!!
-        
+
         slownik = {
                 Tile.EMPTY.value: "\033[48;5;0m*\033[0m",
                 Tile.BLACK.value: "\033[48;5;27m*\033[0m",
@@ -71,302 +74,115 @@ class Plansza:
                 print()
         except:
             pass
-        
-    def sprawdz(self, czy_czarne: bool):    
-        
-        self.punkty_czarne = 0
-        self.punkty_biale = 0
-        
-        for rzad in range(len(self.plansza)):
-            for kolumna in range(len(self.plansza[rzad])):
-                if self.plansza[rzad][kolumna] == (Tile.BLACK_POINT if czy_czarne else Tile.WHITE_POINT):
-                    self.plansza[rzad][kolumna] = Tile.EMPTY
-            
-        w = copy.deepcopy(self.plansza)
-        
-        for rzad in range(len(self.plansza)):
-            for kolumna in range(len(self.plansza[rzad])):
-                if w[rzad][kolumna] == Tile.EMPTY:
-                    w = self.polacz_plansze(w, self.__policz_punkt(w, kolumna, rzad, czy_czarne), czy_czarne)
-        
-        self.plansza = self.polacz_plansze(w, w, czy_czarne, True)
-        
-        for rzad in range(len(self.plansza)):
-            for kolumna in range(len(self.plansza[rzad])):
-                if self.plansza[rzad][kolumna] == Tile.BLACK_POINT:
-                    self.punkty_czarne += 1
-                elif self.plansza[rzad][kolumna] == Tile.WHITE_POINT:
-                    self.punkty_biale += 1
 
-    def zaznacz_martwe_na_terytorium(self, czy_czarne: bool):
-        w = copy.deepcopy(self.plansza)
-        
-        punkt_sprawdzany = Tile.BLACK_POINT if czy_czarne else Tile.WHITE_POINT
-        
-        for rzad in range(len(self.plansza)):
-            for kolumna in range(len(self.plansza[rzad])):
-                if w[rzad][kolumna] == punkt_sprawdzany:
-                    w = self.polacz_plansze(w, self.__policz_punkt(w, kolumna, rzad, czy_czarne), czy_czarne)
-        
-        self.plansza = self.polacz_plansze(w, w, czy_czarne, True, True)
-        
-        return self.plansza
-    
-    def __policz_punkt(
-        self,
-        plansza: list[list[Tile]],
-        x: int,
-        y: int,
-        czy_czarne: bool
-    ) -> list[list[Tile]]:
+    def grupa(self, rzad, kolumna):
+        ## zwraca kamienie połączone z tym na (rzad, kolumna) i ich oddechy
+        kolor = self.plansza[rzad][kolumna]
+        kamienie = [(rzad, kolumna)]
+        oddechy = []
 
-        
-        tile = Tile.BLACK if czy_czarne else Tile.WHITE
-        
-        dead_tile = Tile.BLACK_DEAD if czy_czarne else Tile.WHITE_DEAD
+        i = 0
+        while i < len(kamienie):
+            r, k = kamienie[i]
+            i += 1
 
-        empty = [
-            Tile.TEMP_ZERO,
-            Tile.TEMP_OPPOSITE_ZERO
-        ]
+            for nr, nk in ((r - 1, k), (r + 1, k), (r, k - 1), (r, k + 1)):
+                if self.plansza[nr][nk] == Tile.EMPTY and (nr, nk) not in oddechy:
+                    oddechy.append((nr, nk))
+                elif self.plansza[nr][nk] == kolor and (nr, nk) not in kamienie:
+                    kamienie.append((nr, nk))
 
-        accepted = [
-            Tile.BORDER,
-            Tile.BLACK_POINT if czy_czarne else Tile.WHITE_POINT,
-            tile,
-            Tile.TEMP_ONE,
-            Tile.TEMP_OPPOSITE_ONE
-        ]
+        return kamienie, oddechy
 
-        unaccepted = [
-            Tile.WHITE_POINT if czy_czarne else Tile.BLACK_POINT,
-            Tile.BORDER
-        ]
-        
-        opposite = Tile.BLACK if not czy_czarne else Tile.WHITE
-
-        temp_plansza = copy.deepcopy(plansza)
-        
-        odwiedzone: list[tuple[int, int]] = []
-
-        def zamien_wszystkie_na_martwe() -> None:
-            for rzad in range(len(temp_plansza)):
-                for kolumna in range(len(temp_plansza[rzad])):
-                    if temp_plansza[rzad][kolumna] == tile:
-                        temp_plansza[rzad][kolumna] = dead_tile
-
-        def sprawdz_oddech(x: int, y: int) -> None:
-            if (x, y) in odwiedzone:
-                return
-
-            odwiedzone.append((x, y))
-            
-            if temp_plansza[y][x] == dead_tile:
-                temp_plansza[y][x] = tile
-                
-            
-            for offset_x, offset_y in (
-                (-1, 0),
-                (1, 0),
-                (0, -1),
-                (0, 1)
-            ):
-                nx = x + offset_x
-                ny = y + offset_y
-
-                if (
-                    (nx, ny) not in odwiedzone
-                    and temp_plansza[ny][nx] == dead_tile
-                ):
-                    sprawdz_oddech(nx, ny)
-
-        def usun_martwe() -> None:
-            for rzad in range(len(temp_plansza)):
-                for kolumna in range(len(temp_plansza[rzad])):
-                    if temp_plansza[rzad][kolumna] == dead_tile:
-                        temp_plansza[rzad][kolumna] = Tile.EMPTY
-        
-        def sprawdz_rekursywny(x: int, y: int) -> None:
-            
-            #self.debug_printuj_plansze(temp_plansza)
-            
-            if (x, y) in odwiedzone:
-                return
-
-            odwiedzone.append((x, y))
-
-            ok_combo = 0
-
-            for offset_x, offset_y in (
-                (-1, 0),
-                (1, 0),
-                (0, -1),
-                (0, 1)
-            ):
-                nx = x + offset_x
-                ny = y + offset_y
-
-                if temp_plansza[ny][nx] in accepted:
-                    ok_combo += 1
-
-            if (
-                # any(
-                #     temp_plansza[y + offset_y][x + offset_x] in unaccepted
-                #     for offset_x, offset_y in (
-                #         (-1, 0),
-                #         (1, 0),
-                #         (0, -1),
-                #         (0, 1)
-                #     )
-                # )
-                # or
-                sum(
-                    temp_plansza[y + offset_y][x + offset_x] in empty
-                    for offset_x, offset_y in (
-                        (-1, 0),
-                        (1, 0),
-                        (0, -1),
-                        (0, 1)
-                    )
-                ) >= 1
-            ):
-                ok_combo = 0
-
-            if ok_combo >= 2 and temp_plansza[y][x] not in unaccepted:
-                temp_plansza[y][x] = Tile.TEMP_ONE if temp_plansza[y][x] != opposite else Tile.TEMP_OPPOSITE_ONE
-            else:
-                temp_plansza[y][x] = Tile.TEMP_ZERO if temp_plansza[y][x] != opposite else Tile.TEMP_OPPOSITE_ZERO
-            
-            for offset_x, offset_y in (
-                (-1, 0),
-                (1, 0),
-                (0, -1),
-                (0, 1)
-            ):
-                nx = x + offset_x
-                ny = y + offset_y
-
-                if (
-                    (nx, ny) not in odwiedzone
-                    and temp_plansza[ny][nx] in [Tile.EMPTY, opposite]
-                ):
-                    sprawdz_rekursywny(nx, ny)
-        
-        def rozsiej_zero(x: int, y: int) -> None:
-            if (x, y) in odwiedzone:
-                return
-
-            odwiedzone.append((x, y))
-
-            if temp_plansza[y][x] == Tile.TEMP_ONE:
-                temp_plansza[y][x] = Tile.TEMP_ZERO
-            elif temp_plansza[y][x] == Tile.TEMP_OPPOSITE_ONE:
-                temp_plansza[y][x] = Tile.TEMP_OPPOSITE_ZERO
-            
-            for offset_x, offset_y in (
-                (-1, 0),
-                (1, 0),
-                (0, -1),
-                (0, 1)
-            ):
-                nx = x + offset_x
-                ny = y + offset_y
-
-                if (
-                    (nx, ny) not in odwiedzone
-                    and temp_plansza[ny][nx] in [Tile.BLACK_POINT, Tile.WHITE_POINT, Tile.TEMP_ONE, Tile.TEMP_OPPOSITE_ONE, Tile.TEMP_ZERO, Tile.TEMP_OPPOSITE_ZERO]
-                ):
-                    rozsiej_zero(nx, ny)
-    
-    
-        ### START
-
-        zamien_wszystkie_na_martwe()
-        
-        #self.debug_printuj_plansze(temp_plansza)
-        
-        odwiedzone = []
-        
-        for rzad in range(len(temp_plansza)):
-            for kolumna in range(len(temp_plansza[rzad])):
-                if temp_plansza[rzad][kolumna] in [Tile.EMPTY, Tile.TEMP_ZERO,  Tile.TEMP_ONE, Tile.BLACK_POINT, Tile.WHITE_POINT]:
-                    sprawdz_oddech(kolumna, rzad)
-        
-        #self.debug_printuj_plansze(temp_plansza)
-        
-        usun_martwe()
-        
-        #self.debug_printuj_plansze(temp_plansza)
-        
-        odwiedzone = []
-        
-        if x == 6 and y == 8:
-            pass
-        
-        sprawdz_rekursywny(x, y)
-        
-        #self.debug_printuj_plansze(temp_plansza)
-        
-        for odw in odwiedzone[::-1]:
-            if temp_plansza[odw[1]][odw[0]] in [Tile.TEMP_ZERO, Tile.TEMP_OPPOSITE_ZERO]: 
-                odwiedzone = []
-                rozsiej_zero(*odw)
-                break
-        
-        return temp_plansza
-
-    def polacz_plansze(self, stara_plansza: list[list[Tile]], w: list[list[Tile]], czy_czarne: bool, normalize: bool = False, change_opposite_one_to_dead: bool = False):
-        nowa_plansza = [[Tile.EMPTY for j in range(len(self.plansza))] for i in range(len(self.plansza))]
-                
-        #self.debug_printuj_plansze(w)
-        #self.debug_printuj_plansze(stara_plansza)
-        
-        final_punkt = Tile.BLACK_POINT if czy_czarne else Tile.WHITE_POINT
-        
-        translator = {
-            Tile.TEMP_ONE: final_punkt,
-            Tile.TEMP_ZERO: Tile.EMPTY,
-            Tile.TEMP_OPPOSITE_ZERO: Tile.BLACK if not czy_czarne else Tile.WHITE,
-            Tile.TEMP_OPPOSITE_ONE: (Tile.BLACK if not czy_czarne else Tile.WHITE) if not change_opposite_one_to_dead else (Tile.BLACK_DEAD if not czy_czarne else Tile.WHITE_DEAD)
-        }
-        
-        if not czy_czarne:
-            pass
-        
-        for i in range(len(nowa_plansza)):
-            for j in range(len(nowa_plansza[i])):
-                if w[i][j] == Tile.TEMP_ONE and normalize:
-                    nowa_plansza[i][j] = final_punkt
-                elif w[i][j] in [Tile.TEMP_ONE, Tile.TEMP_ZERO, Tile.TEMP_OPPOSITE_ONE, Tile.TEMP_OPPOSITE_ZERO] and not normalize:
-                    nowa_plansza[i][j] = w[i][j]
-                elif w[i][j] == Tile.TEMP_OPPOSITE_ONE:
-                    nowa_plansza[i][j] = translator[w[i][j]]
-                else:
-                    if w[i][j] in translator:
-                        nowa_plansza[i][j] = translator[w[i][j]]
-                    else:
-                        nowa_plansza[i][j] = stara_plansza[i][j]
-        
-        #self.debug_printuj_plansze(nowa_plansza)
-        return nowa_plansza
-
-    def sprawdz_samobojstwo(self, rzad: int, kolumna: int, czy_czarny: bool) -> bool:
-        plansza_backup = copy.deepcopy(self.plansza)
-        
-        opposite = Tile.WHITE_POINT if czy_czarny else Tile.BLACK_POINT
-        
-        self.plansza[rzad][kolumna] = Tile.BLACK if czy_czarny else Tile.WHITE
-                
-        self.sprawdz(czy_czarny)
-        self.sprawdz(not czy_czarny)
-        self.sprawdz(czy_czarny)
-        self.sprawdz(not czy_czarny)
-        
-        self.debug_printuj_plansze(self.plansza)
-        
-        
-        if self.plansza[rzad][kolumna] == opposite:
-            self.plansza = copy.deepcopy(plansza_backup)
+    def postaw(self, rzad, kolumna, czy_czarny):
+        if self.plansza[rzad][kolumna] != Tile.EMPTY:
             return False
-        else:
-            return True
+
+        stara = copy.deepcopy(self.plansza)
+
+        przeciwnik = Tile.WHITE if czy_czarny else Tile.BLACK
+        self.plansza[rzad][kolumna] = Tile.BLACK if czy_czarny else Tile.WHITE
+
+        ## zbijanie kamieni przeciwnika które nie mają już oddechów
+        for nr, nk in ((rzad - 1, kolumna), (rzad + 1, kolumna), (rzad, kolumna - 1), (rzad, kolumna + 1)):
+            if self.plansza[nr][nk] == przeciwnik:
+                kamienie, oddechy = self.grupa(nr, nk)
+
+                if len(oddechy) == 0:
+                    for r, k in kamienie:
+                        self.plansza[r][k] = Tile.EMPTY
+
+        ## samobójstwo
+        kamienie, oddechy = self.grupa(rzad, kolumna)
+        if len(oddechy) == 0:
+            self.plansza = stara
+            return False
+
+        ## ko - nie można od razu odbić
+        if self.plansza == self.poprzednia:
+            self.plansza = stara
+            return False
+
+        self.poprzednia = stara
+        return True
+
+    def policz(self, martwe, komi):
+        ## liczenie po chińsku: żywe kamienie + puste pola otoczone tylko przez jeden kolor
+        ## martwe kamienie liczą się jak puste pola
+        punkty_czarne = 0
+        punkty_biale = komi
+        wynik = copy.deepcopy(self.plansza)
+        sprawdzone = []
+
+        for rzad in range(1, self.rozmiar + 1):
+            for kolumna in range(1, self.rozmiar + 1):
+                tile = self.plansza[rzad][kolumna]
+
+                if tile in (Tile.BLACK, Tile.WHITE) and (rzad, kolumna) not in martwe:
+                    if tile == Tile.BLACK:
+                        punkty_czarne += 1
+                    else:
+                        punkty_biale += 1
+                    continue
+
+                if (rzad, kolumna) in sprawdzone:
+                    continue
+
+                ## szukamy całego obszaru i sprawdzamy jakie kolory są dookoła
+                obszar = [(rzad, kolumna)]
+                kolory = []
+                i = 0
+                while i < len(obszar):
+                    r, k = obszar[i]
+                    i += 1
+
+                    for nr, nk in ((r - 1, k), (r + 1, k), (r, k - 1), (r, k + 1)):
+                        t = self.plansza[nr][nk]
+
+                        if t == Tile.BORDER:
+                            continue
+
+                        if t in (Tile.BLACK, Tile.WHITE) and (nr, nk) not in martwe:
+                            if t not in kolory:
+                                kolory.append(t)
+                        elif (nr, nk) not in obszar:
+                            obszar.append((nr, nk))
+
+                sprawdzone += obszar
+
+                for r, k in obszar:
+                    if self.plansza[r][k] == Tile.BLACK:
+                        wynik[r][k] = Tile.BLACK_DEAD
+                    elif self.plansza[r][k] == Tile.WHITE:
+                        wynik[r][k] = Tile.WHITE_DEAD
+
+                    if kolory == [Tile.BLACK]:
+                        punkty_czarne += 1
+                        if self.plansza[r][k] == Tile.EMPTY:
+                            wynik[r][k] = Tile.BLACK_POINT
+                    elif kolory == [Tile.WHITE]:
+                        punkty_biale += 1
+                        if self.plansza[r][k] == Tile.EMPTY:
+                            wynik[r][k] = Tile.WHITE_POINT
+
+        return punkty_czarne, punkty_biale, wynik

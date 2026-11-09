@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <title>Szachy</title>
+  <link rel="stylesheet" href="lib/chessground/chessground.base.css">
+  <link rel="stylesheet" href="lib/chessground/chessground.brown.css">
+  <link rel="stylesheet" href="lib/chessground/chessground.cburnett.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="gra">
+    <div id="szachownica" class="szachownica"></div>
+
+    <div class="panel szachy-panel">
+      <div class="gracz">
+        <span id="gora-nazwa"></span>
+        <span id="gora-zegar" class="zegar"></span>
+      </div>
+
+      <p id="status" class="napis">Łączenie...</p>
+
+      <div id="promocja" hidden>
+        <p>Na co zamienić pionka?</p>
+        <button data-figura="q">Hetman</button>
+        <button data-figura="r">Wieża</button>
+        <button data-figura="b">Goniec</button>
+        <button data-figura="n">Skoczek</button>
+      </div>
+
+      <p id="historia" class="historia"></p>
+
+      <div id="przyciski-gry">
+        <button id="remis">Zaproponuj remis</button>
+        <button id="poddaj">Poddaj się</button>
+      </div>
+
+      <div class="gracz">
+        <span id="dol-nazwa"></span>
+        <span id="dol-zegar" class="zegar"></span>
+      </div>
+
+      <button id="lobby">Lobby</button>
+    </div>
+  </div>
+
+  <audio id="dzwiek" src="../assets/snd/piece1.ogg"></audio>
+
+  <script src="wspolne.js"></script>
+  <script type="module" src="szachy.js"></script>
+</body>
+</html>

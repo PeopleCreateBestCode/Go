@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <title>Lobby</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="okno">
+    <h1 id="tytul"></h1>
+
+    <p id="wybor-czasu" hidden>
+      Czas:
+      <select id="czas">
+        <option value="1+0">1 min</option>
+        <option value="3+2">3 min + 2 s</option>
+        <option value="5+0" selected>5 min</option>
+        <option value="10+0">10 min</option>
+        <option value="0+0">bez czasu</option>
+      </select>
+    </p>
+
+    <button id="utworz">Utwórz grę</button>
+    <button id="menu">Menu</button>
+
+    <h2>Gry czekające na przeciwnika</h2>
+    <ul id="lista"></ul>
+    <p id="blad" class="blad"></p>
+  </div>
+
+  <script src="wspolne.js"></script>
+  <script src="lobby.js"></script>
+</body>
+</html>

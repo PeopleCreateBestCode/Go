@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <title>Go</title>
+  <link rel="icon" id="ikona" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Ccircle cx='10' cy='10' r='10'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="gra">
+    <div id="plansza" class="plansza"></div>
+
+    <div class="panel">
+      <p id="gracze" class="napis"></p>
+      <p id="tura" class="napis">Łączenie...</p>
+
+      <button id="pas" class="pas"><img src="../assets/img/pass.gif" alt="Pas"></button>
+
+      <div id="liczenie" hidden>
+        <button id="akceptuj">Akceptuję wynik</button>
+        <button id="wznow">Wznów grę</button>
+      </div>
+
+      <div class="punkty">
+        <p id="czarne" class="napis">Czarne: 0</p>
+        <p id="biale" class="napis zolty">Białe: 0</p>
+      </div>
+
+      <div class="przyciski">
+        <button id="lobby">Lobby</button>
+        <button id="masha" class="masha-przycisk"><img src="../assets/img/mab.webp" alt="Masha"></button>
+      </div>
+    </div>
+  </div>
+
+  <audio id="dzwiek-czarne" src="../assets/snd/piece1.ogg"></audio>
+  <audio id="dzwiek-biale" src="../assets/snd/piece2.ogg"></audio>
+  <audio id="muzyka" src="../assets/snd/musica3.ogg" loop></audio>
+
+  <script src="wspolne.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

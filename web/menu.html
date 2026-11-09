@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <title>Gry</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="okno">
+    <p id="witaj"></p>
+    <h2>Wybierz grę</h2>
+
+    <div class="menu">
+      <a href="lobby.html?gra=go">Go</a>
+      <a href="lobby.html?gra=szachy">Szachy</a>
+      <a href="https://playgta5.com/">GTA V</a>
+    </div>
+
+    <button id="wyloguj">Wyloguj</button>
+  </div>
+
+  <script src="wspolne.js"></script>
+  <script>
+    zapytanie("/api/ja").then((ja) => {
+      document.getElementById("witaj").textContent = "Cześć " + ja.nazwa + "!";
+    });
+
+    document.getElementById("wyloguj").onclick = async () => {
+      await zapytanie("/api/wyloguj", {});
+      location.href = "login.html";
+    };
+  </script>
+</body>
+</html>

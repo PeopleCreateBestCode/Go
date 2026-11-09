@@ -1,0 +1,291 @@
+body {
+  margin: 0;
+  padding: 20px;
+  min-height: 100vh;
+  box-sizing: border-box;
+  background: url("../assets/img/galaxy.jpeg") center / cover fixed;
+  color: white;
+  font-family: Arial, sans-serif;
+  font-size: 22px;
+  font-weight: bold;
+}
+
+body.masha {
+  background-image: url("../assets/img/mab_bg.png");
+}
+
+button {
+  font-size: 16px;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
+.gra {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 25px;
+}
+
+/* plansza */
+
+.plansza {
+  --n: 16;
+  --pole: 30px;
+  display: grid;
+  grid-template-columns: repeat(var(--n), var(--pole));
+  grid-template-rows: repeat(var(--n), var(--pole));
+  padding: 15px;
+  background: #ddb46e;
+}
+
+.pole {
+  position: relative;
+  cursor: pointer;
+}
+
+/* linie planszy */
+.pole::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: black;
+}
+
+.pole::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+  background: black;
+}
+
+.lewa::before { left: 50%; }
+.prawa::before { right: 50%; }
+.gora::after { top: 50%; }
+.dol::after { bottom: 50%; }
+
+.hoshi {
+  background: radial-gradient(circle, black 3px, transparent 3px);
+}
+
+/* kamienie */
+
+.kamien {
+  display: none;
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  right: 3px;
+  bottom: 3px;
+  border-radius: 50%;
+  z-index: 1;
+}
+
+[data-pole="black"] .kamien,
+[data-pole="black_dead"] .kamien {
+  display: block;
+  background: black;
+}
+
+[data-pole="white"] .kamien,
+[data-pole="white_dead"] .kamien {
+  display: block;
+  background: white;
+}
+
+/* martwe kamienie - czerwony krzyżyk */
+[data-pole="black_dead"] .kamien::after,
+[data-pole="white_dead"] .kamien::after {
+  content: "X";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  text-align: center;
+  line-height: 24px;
+  color: red;
+  font-size: 18px;
+}
+
+/* terytorium widać dopiero przy liczeniu */
+.koniec [data-pole="black_point"] .kamien,
+.koniec [data-pole="white_point"] .kamien {
+  display: block;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
+  border-radius: 0;
+}
+
+.koniec [data-pole="black_point"] .kamien { background: black; }
+.koniec [data-pole="white_point"] .kamien { background: white; }
+
+/* masha mode */
+.masha [data-pole="black"] .kamien,
+.masha [data-pole="black_dead"] .kamien {
+  border-radius: 0;
+  background: url("../assets/img/masha.jpeg") center / cover;
+}
+
+.masha [data-pole="white"] .kamien,
+.masha [data-pole="white_dead"] .kamien {
+  border-radius: 0;
+  background: url("../assets/img/bear.jpeg") center / cover;
+}
+
+/* panel z boku */
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  width: 216px;
+}
+
+.napis {
+  margin: 0;
+  white-space: pre-line;
+}
+
+.zolty {
+  color: yellow;
+}
+
+.pas {
+  padding: 0;
+  border: none;
+  background: none;
+}
+
+.pas img {
+  display: block;
+}
+
+.pas:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.punkty {
+  margin-top: auto;
+}
+
+.punkty p {
+  margin: 0 0 15px;
+}
+
+.przyciski {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.masha-przycisk {
+  padding: 0;
+  border: none;
+  background: none;
+}
+
+.masha-przycisk img {
+  display: block;
+}
+
+/* logowanie i lobby */
+
+.okno {
+  width: 450px;
+  margin: 50px auto;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.okno h1 {
+  margin-top: 0;
+}
+
+.okno h2 {
+  font-size: 18px;
+}
+
+.okno input {
+  font-size: 18px;
+  padding: 6px;
+}
+
+.okno li {
+  margin-bottom: 8px;
+}
+
+.blad {
+  color: #ff7777;
+  font-size: 16px;
+}
+
+/* menu */
+
+.menu {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.menu a {
+  flex: 1;
+  padding: 30px 0;
+  text-align: center;
+  color: white;
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.15);
+  border: 2px solid white;
+}
+
+.menu a:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* szachy */
+
+.szachownica {
+  width: 480px;
+  height: 480px;
+  flex-shrink: 0;
+}
+
+.szachy-panel {
+  width: 260px;
+}
+
+.gracz {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.zegar {
+  font-family: monospace;
+  font-size: 26px;
+  padding: 2px 8px;
+  background: #333;
+}
+
+.zegar.chodzi {
+  background: #3a7a3a;
+}
+
+.historia {
+  font-size: 15px;
+  font-weight: normal;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+#przyciski-gry button {
+  margin-bottom: 5px;
+}
