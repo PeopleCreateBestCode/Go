@@ -17,6 +17,10 @@ app.secret_key = os.environ.get("SECRET_KEY") or secrets.token_hex(32)
 
 pokoje = {}
 partie = {}  
+
+rzepcia_values = {}
+rzepcie = []
+
 blokada = threading.Lock()  
 zmiana = threading.Condition(blokada)  
 
@@ -55,6 +59,10 @@ def wez_xy():
 
 @app.route("/")
 def strona_glowna():
+    if "id" in session:
+        if session["nazwa"] in rzepcie:
+            return redirect("/web/blokada.html")
+    
     return redirect("/web/login.html")
 
 
@@ -67,6 +75,10 @@ def assets(plik):
 def login():
     dane = request.get_json(silent=True) or {}
     nazwa = str(dane.get("nazwa", "")).strip()
+
+    if "id" in session:
+            if session["nazwa"] in rzepcie:
+                return redirect("/web/blokada.html")
 
     if nazwa == "":
         return blad("Podaj nazwę", 400)
@@ -90,12 +102,20 @@ def ja():
 
 @app.route("/api/wyloguj", methods=["POST"])
 def wyloguj():
+    if "id" in session:
+        if session["nazwa"] in rzepcie:
+                return redirect("/web/blokada.html")
+    
     session.clear()
     return jsonify({"ok": True})
 
 
 @app.route("/api/gry", methods=["GET"])
 def lista_gier():
+    if "id" in session:
+            if session["nazwa"] in rzepcie:
+                return redirect("/")
+    
     if "id" not in session:
         return blad("Nie jesteś zalogowany", 401)
 
@@ -116,6 +136,21 @@ def nowa_gra():
     id_pokoju = secrets.token_urlsafe(6)
     gracz = {"id": session["id"], "nazwa": session["nazwa"]}
 
+    for pok in pokoje:
+        if pokoje[pok].czarny["nazwa"] == gracz["nazwa"]:
+        
+            if gracz["nazwa"] in rzepcia_values:
+                rzepcia_values[gracz["nazwa"]] += 1
+            else:
+                rzepcia_values[gracz["nazwa"]] = 1
+            
+            pokoje.pop(pok)
+            
+            if rzepcia_values[gracz["nazwa"]] > 4 or gracz["nazwa"] in rzepcie:
+                rzepcie.append(gracz["nazwa"])
+                return redirect("/")
+        
+    
     with blokada:
         pokoje[id_pokoju] = Pokoj(id_pokoju, Gra(ROZMIAR_PLANSZY, KOMI), gracz)
 
@@ -125,6 +160,10 @@ def nowa_gra():
 @app.route("/api/gry/<id_pokoju>/dolacz", methods=["POST"])
 def dolacz(id_pokoju):
     with blokada:
+        if "id" in session:
+                    if session["nazwa"] in rzepcie:
+                        return redirect("/")
+        
         pokoj, kolor, b = znajdz_pokoj(id_pokoju)
         if b:
             return b
@@ -140,6 +179,11 @@ def dolacz(id_pokoju):
 @app.route("/api/gry/<id_pokoju>")
 def stan_gry(id_pokoju):
     with blokada:
+        
+        if "id" in session:
+                    if session["nazwa"] in rzepcie:
+                        return redirect("/")
+        
         pokoj, kolor, b = znajdz_pokoj(id_pokoju)
         if b:
             return b
@@ -148,6 +192,11 @@ def stan_gry(id_pokoju):
 
 @app.route("/api/gry/<id_pokoju>/ruch", methods=["POST"])
 def ruch(id_pokoju):
+    
+    if "id" in session:
+                if session["nazwa"] in rzepcie:
+                    return redirect("/")
+    
     x, y = wez_xy()
     if x is None:
         return blad("Zły ruch", 400)
